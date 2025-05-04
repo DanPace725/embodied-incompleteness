@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Optional: Add custom theme variables */
+@theme {
+  /* Example customizations - you can add or remove these based on your needs */
+  --font-display: "Inter", sans-serif;
+  --breakpoint-3xl: 1920px;
+  
+  /* Custom colors */
+  --color-primary-500: oklch(0.84 0.18 117.33);
+  
+  /* Custom animations */
+  --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+}
+
+/* Optional: Add any custom CSS styles */

@@ -1,0 +1,135 @@
+---
+import { Client } from "@notionhq/client";
+import Layout from "../../layouts/Layout.astro";
+
+export const prerender = false;
+
+// Get the project ID from the URL
+const { slug } = Astro.params;
+
+// Initialize Notion client
+const notion = new Client({ auth: import.meta.env.NOTION_TOKEN });
+
+// Fetch the page data
+let page;
+let blocks = [];
+
+try {
+  // Get the page
+  page = await notion.pages.retrieve({ page_id: slug });
+  
+  // Get the blocks (content)
+  const blockResponse = await notion.blocks.children.list({
+    block_id: slug,
+  });
+  blocks = blockResponse.results;
+} catch (error) {
+  console.error("Notion fetch error:", error);
+  return Astro.redirect('/'); // Redirect to home page if there's an error
+}
+
+function getTitle(page) {
+  const titleProp = page.properties.Name;
+  if (!titleProp || !titleProp.title || !titleProp.title[0]) return "Untitled";
+  return titleProp.title[0].plain_text;
+}
+
+function getDescription(page) {
+  const descProp = page.properties.Description;
+  if (!descProp || !descProp.rich_text || !descProp.rich_text[0]) return "";
+  return descProp.rich_text[0].plain_text;
+}
+
+// Helper to render different block types
+function renderBlock(block) {
+  switch (block.type) {
+    case 'paragraph':
+      return block.paragraph.rich_text.map(text => text.plain_text).join('');
+    case 'heading_1':
+      return block.heading_1.rich_text.map(text => text.plain_text).join('');
+    case 'heading_2':
+      return block.heading_2.rich_text.map(text => text.plain_text).join('');
+    case 'heading_3':
+      return block.heading_3.rich_text.map(text => text.plain_text).join('');
+    default:
+      return null;
+  }
+}
+---
+
+<Layout>
+  <main class="container mx-auto px-4 py-8 max-w-4xl">
+    {/* Back button */}
+    <a 
+      href="/" 
+      class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6 transition-colors"
+    >
+      <span class="mr-2">←</span> Back to Projects
+    </a>
+
+    {/* Project title */}
+    <h1 class="text-4xl font-bold mb-4">{getTitle(page)}</h1>
+    
+    {/* Description/Subtitle */}
+    <div class="text-xl text-gray-600 mb-8">
+      {getDescription(page)}
+    </div>
+
+    {/* Main content */}
+    <div class="prose prose-lg max-w-none">
+      {blocks.map((block) => {
+        const content = renderBlock(block);
+        if (!content) return null;
+        
+        return (
+          <div class:list={[
+            'mb-4',
+            {
+              'text-base': block.type === 'paragraph',
+              'text-3xl font-bold mt-8': block.type === 'heading_1',
+              'text-2xl font-semibold mt-6': block.type === 'heading_2',
+              'text-xl font-medium mt-4': block.type === 'heading_3',
+            }
+          ]}>
+            {content}
+          </div>
+        );
+      })}
+    </div>
+
+    {/* Properties display */}
+    <div class="mt-12 bg-gray-50 rounded-lg p-6">
+      <h2 class="text-xl font-semibold mb-4">Project Properties</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Object.entries(page.properties).map(([key, value]) => (
+          <div class="bg-white p-4 rounded shadow">
+            <div class="font-medium text-gray-600">{key}</div>
+            <div class="mt-1">
+              {/* Existing property types */}
+              {value.type === 'rich_text' && value.rich_text[0]?.plain_text}
+              {value.type === 'title' && value.title[0]?.plain_text}
+              {value.type === 'select' && value.select?.name}
+              {/* Add date handling */}
+              {value.type === 'date' && (
+                <span class="text-gray-800">
+                  {value.date?.start ? new Date(value.date.start).toLocaleDateString() : 'Not set'}
+                  {value.date?.end && ` - ${new Date(value.date.end).toLocaleDateString()}`}
+                </span>
+              )}
+              {/* Multi-select handling */}
+              {value.type === 'multi_select' && 
+                <div class="flex flex-wrap gap-2">
+                  {value.multi_select?.map(tag => (
+                    <span class="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded">
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              }
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>

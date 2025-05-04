@@ -1,16 +1,40 @@
 ---
+import { Client } from "@notionhq/client";
+import Layout from "../layouts/Layout.astro";  // Changed to proper import
+export const prerender = false;
 
+const notion = new Client({ auth: import.meta.env.NOTION_TOKEN });
+const databaseId = "1e811588332080a98a3ac31045f362e1";
+
+let notionData;
+try {
+  notionData = await notion.databases.query({ database_id: databaseId });
+} catch (error) {
+  console.error("Notion fetch error:", error);
+  notionData = { results: [] };
+}
+
+function getTitle(page) {
+  const titleProp = page.properties.Name;
+  if (!titleProp || !titleProp.title || !titleProp.title[0]) return "Untitled";
+  return titleProp.title[0].plain_text;
+}
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout>
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-center">Projects</h1>
+    <ul class="space-y-4">
+      {notionData.results.map(page => (
+        <li>
+          <a
+            href={`/projects/${page.id}`}
+            class="block p-4 rounded-lg bg-white shadow hover:bg-blue-50 transition"
+          >
+            {getTitle(page)}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </main>
+</Layout>

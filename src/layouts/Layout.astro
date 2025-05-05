@@ -2,17 +2,15 @@
 import "../styles/global.css";
 ---
 
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Embodied Incompleteness</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- Remove this line as we're already importing the CSS in the frontmatter -->
-    <!-- <link rel="stylesheet" href="/src/styles/global.css" /> -->
   </head>
-  <body class="bg-gray-100 min-h-screen font-sans text-gray-900">
-    <main class="max-w-2xl mx-auto py-10 px-4">
+  <body class="dark:bg-black bg-black text-white min-h-screen h-full w-full m-0 p-0 overflow-y-auto">
+    <main class="w-full h-screen p-0 m-0">
       <slot />
     </main>
   </body>

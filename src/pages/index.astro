@@ -1,6 +1,6 @@
 ---
 import { Client } from "@notionhq/client";
-import Layout from "../layouts/Layout.astro";  // Changed to proper import
+import Layout from "../layouts/Layout.astro";
 export const prerender = false;
 
 const notion = new Client({ auth: import.meta.env.NOTION_TOKEN });
@@ -19,22 +19,121 @@ function getTitle(page) {
   if (!titleProp || !titleProp.title || !titleProp.title[0]) return "Untitled";
   return titleProp.title[0].plain_text;
 }
+
+function getStatus(page) {
+  const statusProp = page.properties.Status;
+  if (!statusProp || !statusProp.select || !statusProp.select.name) return null;
+  return statusProp.select.name;
+}
+
+function getCategory(page) {
+  const categoryProp = page.properties.Category;
+  if (!categoryProp || !categoryProp.select || !categoryProp.select.name) return null;
+  return categoryProp.select.name;
+}
+
+// Group and sort projects
+const groupedProjects = {};
+notionData.results.forEach(project => {
+  const category = getCategory(project) || "Uncategorized";
+  if (!groupedProjects[category]) {
+    groupedProjects[category] = [];
+  }
+  groupedProjects[category].push(project);
+});
+
+// Get unique status values for legend
+const statusList = [...new Set(
+  notionData.results
+    .map(page => getStatus(page))
+    .filter(Boolean)
+)];
+
+// Color map for statuses
+const statusColors = {
+  "Actively Exploring": "bg-green-500",
+  "Peacefully Resting": "bg-blue-500",
+  "Harvested for Parts": "bg-purple-500",
+  "Hibernating": "bg-yellow-500",
+  "Waiting for Technology": "bg-indigo-500",
+  "Complete Enough": "bg-teal-500",
+  "Actually Completed": "bg-pink-500",
+  "Default": "bg-gray-500"
+};
+
+// Get color for a status
+function getStatusColor(status) {
+  return statusColors[status] || statusColors["Default"];
+}
 ---
 
 <Layout>
-  <main class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6 text-center">Projects</h1>
-    <ul class="space-y-4">
-      {notionData.results.map(page => (
-        <li>
-          <a
-            href={`/projects/${page.id}`}
-            class="block p-4 rounded-lg bg-white shadow hover:bg-blue-50 transition"
-          >
-            {getTitle(page)}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </main>
+  <div class="px-8 py-12">
+    <header class="mb-16 text-center">
+      <h1 class="text-5xl font-bold mb-4 text-white">
+        The Embodied Incompleteness Theorem
+      </h1>
+      <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+        A collection of projects in various states of completion - celebrating the journey of a neurodivergent mind.
+      </p>
+      
+      <!-- Navigation -->
+      <nav class="mt-10 flex justify-center space-x-4">
+        <a href="/constellation" class="px-5 py-3 bg-blue-800 hover:bg-blue-700 text-white rounded-lg transition-colors">
+          View as Constellation
+        </a>
+        <a href="/about" class="px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors">
+          About the Project
+        </a>
+      </nav>
+      
+      <!-- Status Legend -->
+      <div class="mt-12 flex flex-wrap justify-center gap-4">
+        {statusList.map(status => (
+          <div class="flex items-center">
+            <span class={`w-3 h-3 rounded-full ${getStatusColor(status)} mr-2`}></span>
+            <span class="text-gray-300 text-sm">{status}</span>
+          </div>
+        ))}
+      </div>
+    </header>
+
+    <main>
+      {Object.keys(groupedProjects).length === 0 ? (
+        <div class="text-center text-gray-500 py-10">
+          No projects found. Please add some projects to your Notion database.
+        </div>
+      ) : (
+        Object.entries(groupedProjects).map(([category, projects]) => (
+          <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-white border-b border-gray-800 pb-2">{category}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {projects.map(project => {
+                const title = getTitle(project);
+                const status = getStatus(project);
+                return (
+                  <a 
+                    href={`/projects/${project.id}`}
+                    class="block p-5 bg-gray-800 hover:bg-gray-700 rounded-lg transition-all duration-200 border border-gray-700 hover:border-gray-600"
+                  >
+                    <div class="flex justify-between items-start">
+                      <h3 class="text-xl font-medium text-white">{title}</h3>
+                      {status && (
+                        <span class={`text-xs px-2 py-1 rounded-full ${getStatusColor(status)} bg-opacity-30 text-white`}>
+                          {status}
+                        </span>
+                      )}
+                    </div>
+                    <p class="mt-2 text-gray-400 text-sm line-clamp-2">
+                      {project.properties.Description?.rich_text?.[0]?.plain_text || "No description available."}
+                    </p>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        ))
+      )}
+    </main>
+  </div>
 </Layout>

@@ -32,6 +32,12 @@ function getCategory(page) {
   return categoryProp.select.name;
 }
 
+function getInterest(page) {
+  const interestProp = page.properties.Interest;
+  if (!interestProp || interestProp.type !== 'number') return 0;
+  return interestProp.number || 0;
+}
+
 // Group and sort projects
 const groupedProjects = {};
 notionData.results.forEach(project => {
@@ -123,6 +129,7 @@ function getStatusName(status) {
               {projects.map(project => {
                 const title = getTitle(project);
                 const status = getStatus(project);
+                const interest = getInterest(project);
                 return (
                   <a 
                     href={`/projects/${project.id}`}
@@ -130,11 +137,18 @@ function getStatusName(status) {
                   >
                     <div class="flex justify-between items-start">
                       <h3 class="text-xl font-medium text-white">{title}</h3>
-                      {status && (
-                        <span class={`text-xs px-2 py-1 rounded-full ${getStatusColor(status)} bg-opacity-30 text-white`}>
-                          {getStatusName(status)}
-                        </span>
-                      )}
+                      <div class="flex items-center gap-2">
+                        {interest > 0 && (
+                          <span class="text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-gray-600 text-white rounded-full">
+                            👀 {interest}
+                          </span>
+                        )}
+                        {status && (
+                          <span class={`text-xs px-2 py-1 rounded-full ${getStatusColor(status)} bg-opacity-30 text-white`}>
+                            {getStatusName(status)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <p class="mt-2 text-gray-400 text-sm line-clamp-2">
                       {project.properties.Description?.rich_text?.[0]?.plain_text || "No description available."}

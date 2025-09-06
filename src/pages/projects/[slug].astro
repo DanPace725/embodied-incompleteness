@@ -1,6 +1,8 @@
 ---
 import { Client } from "@notionhq/client";
 import Layout from "../../layouts/Layout.astro";
+import InterestButton from "../../components/InterestButton.tsx";
+import TipButton from "../../components/TipButton.tsx";
 
 export const prerender = false;
 
@@ -40,12 +42,32 @@ function getDescription(page) {
   return descProp.rich_text[0].plain_text;
 }
 
+function getInterest(page) {
+  const interestProp = page.properties.Interest;
+  if (!interestProp || interestProp.type !== 'number') return 0;
+  return interestProp.number || 0;
+}
+
 function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
   });
+}
+
+const statusNameMap = {
+  "Actively Exploring": "Sprouting",
+  "Peacefully Resting": "Fallow",
+  "Harvested for Parts": "Composting",
+  "Hibernating": "Dormant",
+  "Waiting for Technology": "Needs More Sun",
+  "Complete Enough": "Evergreen",
+  "Actually Completed": "Mature",
+};
+
+function getStatusName(status) {
+  return statusNameMap[status] || status;
 }
 
 // Helper to render different block types
@@ -63,6 +85,8 @@ function renderBlock(block) {
       return null;
   }
 }
+
+const initialInterest = getInterest(page);
 ---
 
 <Layout>
@@ -105,6 +129,19 @@ function renderBlock(block) {
       })}
     </div>
 
+    {/* Interaction Section */}
+    <div class="mt-16 flex justify-center items-center gap-4">
+      <InterestButton
+        client:load
+        projectId={slug}
+        initialCount={initialInterest}
+      />
+      <TipButton
+        client:load
+        projectId={slug}
+      />
+    </div>
+
     {/* Properties display */}
     <div class="mt-16 bg-gray-900 rounded-lg p-6 border border-gray-800">
       <h2 class="text-2xl font-semibold mb-6 text-white">Project Details</h2>
@@ -118,9 +155,10 @@ function renderBlock(block) {
               {value.type === 'title' && value.title[0]?.plain_text}
               {value.type === 'select' && value.select?.name && (
                 <span class="inline-block px-3 py-1 bg-blue-900 text-blue-200 rounded-full">
-                  {value.select.name}
+                  {key === 'Status' ? getStatusName(value.select.name) : value.select.name}
                 </span>
               )}
+              {value.type === 'number' && value.number}
               {/* Date handling */}
               {value.type === 'date' && (
                 <span class="text-gray-200">

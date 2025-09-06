@@ -2,6 +2,7 @@
 import { Client } from "@notionhq/client";
 import Layout from "../../layouts/Layout.astro";
 import InterestButton from "../../components/InterestButton.tsx";
+import TipButton from "../../components/TipButton.tsx";
 
 export const prerender = false;
 
@@ -129,11 +130,15 @@ const initialInterest = getInterest(page);
     </div>
 
     {/* Interaction Section */}
-    <div class="mt-16 text-center">
+    <div class="mt-16 flex justify-center items-center gap-4">
       <InterestButton
         client:load
         projectId={slug}
         initialCount={initialInterest}
+      />
+      <TipButton
+        client:load
+        projectId={slug}
       />
     </div>
 

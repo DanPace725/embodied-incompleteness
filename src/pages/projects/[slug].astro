@@ -87,6 +87,18 @@ function renderBlock(block) {
 }
 
 const initialInterest = getInterest(page);
+
+// Properties that shouldn't be displayed in the details section
+const excludedProperties = new Set([
+  "Name",
+  "Description",
+  "Interest",
+]);
+
+// Optional mapping of property keys to friendlier labels
+const propertyLabels = {
+  Status: "Stage",
+};
 ---
 
 <Layout>
@@ -146,9 +158,11 @@ const initialInterest = getInterest(page);
     <div class="mt-16 bg-gray-900 rounded-lg p-6 border border-gray-800">
       <h2 class="text-2xl font-semibold mb-6 text-white">Project Details</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {Object.entries(page.properties).map(([key, value]) => (
+        {Object.entries(page.properties)
+          .filter(([key]) => !excludedProperties.has(key))
+          .map(([key, value]) => (
           <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
-            <div class="font-medium text-gray-400 mb-2 uppercase text-sm tracking-wider">{key}</div>
+            <div class="font-medium text-gray-400 mb-2 uppercase text-sm tracking-wider">{propertyLabels[key] || key}</div>
             <div class="text-white">
               {/* Property types */}
               {value.type === 'rich_text' && value.rich_text[0]?.plain_text}
@@ -183,3 +197,4 @@ const initialInterest = getInterest(page);
     </div>
   </div>
 </Layout>
+

@@ -57,10 +57,10 @@ const TipModal: React.FC<Props> = ({ isOpen, onClose, projectId }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4" onClick={onClose}>
-      <div className="bg-gray-900 rounded-xl p-8 w-full max-w-md border border-gray-700" onClick={e => e.stopPropagation()}>
+      <div className="bg-gray-900 rounded-xl p-6 sm:p-8 w-full max-w-md border border-gray-700" onClick={e => e.stopPropagation()}>
         {isSuccess ? (
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Thank You!</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">Thank You!</h2>
             <p className="text-gray-400 mb-6">Your support is greatly appreciated. Note: This is a demo and no payment was processed.</p>
             <button onClick={onClose} className="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
               Close
@@ -69,7 +69,7 @@ const TipModal: React.FC<Props> = ({ isOpen, onClose, projectId }) => {
         ) : (
           <>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Support this Idea</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Support this Idea</h2>
               <button onClick={onClose} className="text-gray-500 hover:text-white">&times;</button>
             </div>
 

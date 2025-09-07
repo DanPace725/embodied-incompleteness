@@ -144,3 +144,25 @@ a:hover {
 .animate-pulse-subtle {
   animation: pulse-subtle 3s ease-in-out infinite;
 }
+
+/* Focus Mode Styles */
+.focus-mode-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+.focus-mode-project {
+  scroll-snap-align: start;
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 4xl;
+  margin: 0 auto;
+}
+
+.hidden {
+  display: none;
+}

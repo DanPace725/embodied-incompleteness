@@ -89,12 +89,12 @@ function getStatusName(status) {
 ---
 
 <Layout>
-  <div class="px-8 py-12">
+  <div class="px-4 sm:px-8 py-12">
     <header class="mb-16 text-center">
-      <h1 class="text-5xl font-bold mb-4 text-white">
+      <h1 class="text-4xl sm:text-5xl font-bold mb-4 text-white">
         A Digital Garden of Ideas
       </h1>
-      <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+      <p class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto">
         A collection of projects, notes, and ideas, all in various stages of growth.
       </p>
       
@@ -104,6 +104,24 @@ function getStatusName(status) {
           About the Garden
         </a>
       </nav>
+
+      <!-- NEW: Add this toggle section -->
+      <div class="mt-8 flex justify-center">
+        <div class="inline-flex rounded-lg bg-gray-800 p-1">
+          <button
+            id="grid-toggle"
+            class="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md transition-colors"
+          >
+            Grid View
+          </button>
+          <button
+            id="focus-toggle"
+            class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
+          >
+            Focus View
+          </button>
+        </div>
+      </div>
       
       <!-- Status Legend -->
       <div class="mt-12 flex flex-wrap justify-center gap-4">
@@ -116,7 +134,7 @@ function getStatusName(status) {
       </div>
     </header>
 
-    <main>
+    <main id="grid-view">
       {Object.keys(groupedProjects).length === 0 ? (
         <div class="text-center text-gray-500 py-10">
           No projects found. Please add some projects to your Notion database.
@@ -135,9 +153,9 @@ function getStatusName(status) {
                     href={`/projects/${project.id}`}
                     class="block p-5 bg-gray-800 hover:bg-gray-700 rounded-lg transition-all duration-200 border border-gray-700 hover:border-gray-600"
                   >
-                    <div class="flex justify-between items-start">
-                      <h3 class="text-xl font-medium text-white">{title}</h3>
-                      <div class="flex items-center gap-2">
+                    <div class="flex justify-between items-start gap-4">
+                      <h3 class="text-xl font-medium text-white flex-1">{title}</h3>
+                      <div class="flex items-center gap-2 flex-wrap justify-end">
                         {interest > 0 && (
                           <span class="text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-gray-600 text-white rounded-full">
                             👀 {interest}
@@ -161,5 +179,70 @@ function getStatusName(status) {
         ))
       )}
     </main>
+
+    <!-- NEW: Focus mode section -->
+    <main id="focus-view" class="hidden focus-mode-container">
+      {notionData.results.map(project => {
+        const title = getTitle(project);
+        const status = getStatus(project);
+        const interest = getInterest(project);
+        return (
+          <div class="focus-mode-project">
+            <div class="text-center">
+              <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">{title}</h2>
+              {status && (
+                <span class={`inline-block text-sm px-3 py-1 rounded-full ${getStatusColor(status)} bg-opacity-30 text-white mb-4`}>
+                  {getStatusName(status)}
+                </span>
+              )}
+              <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                {project.properties.Description?.rich_text?.[0]?.plain_text || "No description available."}
+              </p>
+              {interest > 0 && (
+                <div class="text-gray-400 mb-6">
+                  👀 {interest} {interest === 1 ? 'person has' : 'people have'} noticed this
+                </div>
+              )}
+              <a
+                href={`/projects/${project.id}`}
+                class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                Explore This Idea →
+              </a>
+            </div>
+          </div>
+        );
+      })}
+    </main>
   </div>
 </Layout>
+<script>
+  const gridToggle = document.getElementById('grid-toggle');
+  const focusToggle = document.getElementById('focus-toggle');
+  const gridView = document.getElementById('grid-view');
+  const focusView = document.getElementById('focus-view');
+
+  gridToggle?.addEventListener('click', () => {
+    // Update button styles
+    gridToggle.classList.add('bg-gray-600', 'text-white');
+    gridToggle.classList.remove('text-gray-400');
+    focusToggle.classList.remove('bg-gray-600', 'text-white');
+    focusToggle.classList.add('text-gray-400');
+
+    // Show grid, hide focus
+    gridView?.classList.remove('hidden');
+    focusView?.classList.add('hidden');
+  });
+
+  focusToggle?.addEventListener('click', () => {
+    // Update button styles
+    focusToggle.classList.add('bg-gray-600', 'text-white');
+    focusToggle.classList.remove('text-gray-400');
+    gridToggle.classList.remove('bg-gray-600', 'text-white');
+    gridToggle.classList.add('text-gray-400');
+
+    // Show focus, hide grid
+    focusView?.classList.remove('hidden');
+    gridView?.classList.add('hidden');
+  });
+</script>

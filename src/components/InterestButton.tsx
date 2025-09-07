@@ -45,7 +45,7 @@ const InterestButton: React.FC<Props> = ({ initialCount, projectId }) => {
         className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gray-800 hover:bg-gray-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
       >
         <span className="text-2xl mr-3">👀</span>
-        {isLoading ? '...' : 'I noticed this!'}
+        {isLoading ? '...' : 'Notice'}
       </button>
       <p className="text-sm text-gray-400">
         This has been noticed by <span className="font-bold text-white">{count}</span> {count === 1 ? 'person' : 'people'}.
